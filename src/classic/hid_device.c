@@ -614,10 +614,12 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t * pack
                     printf("data rep ID %i\n", device->report_id);
 
                     if (hid_report_id_status(device->cid, device->report_id) == HID_REPORT_ID_INVALID){
+                        printf("invalid ID\n");
                         log_info("Ignore invalid report data packet");
                         break;
                     }
                     if (!hid_report_size_valid(device->cid, device->report_id, device->report_type, packet_size - pos)){
+                        printf("invalid size\n");
                         log_info("Ignore invalid report data packet, invalid size");
                         break;
                     }
