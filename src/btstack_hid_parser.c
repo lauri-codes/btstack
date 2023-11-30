@@ -494,6 +494,7 @@ hid_report_id_status_t btstack_hid_id_valid(int report_id, uint16_t hid_descript
                 switch ((GlobalItemTag)item.item_tag){
                     case ReportID:
                         current_report_id = item.item_value;
+                        printf("parsing descriptor... current repID %i [%i]\n",current_report_id,report_id);
                         if (current_report_id != report_id) break;
                         return HID_REPORT_ID_VALID;
                     default:
