@@ -38,6 +38,7 @@
 #define BTSTACK_FILE__ "btstack_hid_parser.c"
 
 #include <string.h>
+#include <stdio.h>
 
 #include "btstack_hid_parser.h"
 #include "btstack_util.h"
