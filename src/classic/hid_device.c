@@ -38,6 +38,7 @@
 #define BTSTACK_FILE__ "hid_device.c"
 
 #include <string.h>
+#include <stdio.h>
 
 #include "bluetooth.h"
 #include "bluetooth_psm.h"
