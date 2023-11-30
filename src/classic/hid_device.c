@@ -621,6 +621,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t * pack
                         log_info("Ignore invalid report data packet, invalid size");
                         break;
                     }
+                    printf("data rep ok!\n");
                     (*hci_device_report_data)(device->cid, device->report_type, device->report_id, packet_size - pos, &packet[pos]);
                     break;
                 default:
