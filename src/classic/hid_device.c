@@ -425,7 +425,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t * pack
     uint8_t report[48];
     hid_message_type_t message_type;
 
-    printf("DEBUG packet [type %#02X]: ",packet_type);
+    printf("DEBUG packet [type %X]: ",packet_type);
     for (int i=0; i<packet_size; i++)
         printf("%#02X ",packet[i]);
     printf("\n");
