@@ -600,16 +600,19 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t * pack
                     break;
 
                 case HID_MESSAGE_TYPE_DATA:
+                    printf("GOT DATA!!\n");
                     if (packet_size < 2) {
                         break;
                     }
                     pos = 0;
                     device->report_type = (hid_report_type_t)(packet[pos++] & 0x03);
                     device->report_id = 0;
+                    printf("data rep type %i\n", device->report_type);
                     if (btstack_hid_report_id_declared(hid_device_descriptor_len, hid_device_descriptor)){
                         device->report_id = packet[pos++];
                     }
-                    
+                    printf("data rep ID %i\n", device->report_id);
+
                     if (hid_report_id_status(device->cid, device->report_id) == HID_REPORT_ID_INVALID){
                         log_info("Ignore invalid report data packet");
                         break;
