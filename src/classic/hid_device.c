@@ -563,6 +563,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t * pack
                         break;
                     }
                     param = packet[0] & 0x01;
+                    printf("SETPROTOCOL! %i %i\n",param,hid_device_boot_protocol_mode_supported);
                     if (((hid_protocol_mode_t)param == HID_PROTOCOL_MODE_BOOT) && !hid_device_boot_protocol_mode_supported){
                         device->report_status = HID_HANDSHAKE_PARAM_TYPE_ERR_INVALID_PARAMETER;
                         break;
