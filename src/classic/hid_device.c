@@ -376,6 +376,7 @@ static int hid_get_report_size_for_id(uint16_t cid, int report_id, hid_report_ty
 
 static hid_report_id_status_t hid_report_id_status(uint16_t cid, uint16_t report_id){
     if (hid_device_in_boot_protocol_mode(cid)){
+        printf("checking in boot protocol mode...\n");
         switch (report_id){
             case HID_BOOT_MODE_KEYBOARD_ID:
             case HID_BOOT_MODE_MOUSE_ID:
@@ -384,6 +385,7 @@ static hid_report_id_status_t hid_report_id_status(uint16_t cid, uint16_t report
                 return HID_REPORT_ID_INVALID;
         }
     } else {
+        printf("checking hid id valid...\n");
         return btstack_hid_id_valid(report_id, hid_device_descriptor_len, hid_device_descriptor);
     }
 }
