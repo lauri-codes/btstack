@@ -434,6 +434,8 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t * pack
     printf("\n");
     */
 
+   hid_protocol_mode_t iprotocol = 2;
+
     switch (packet_type){
         case L2CAP_DATA_PACKET:
             device = hid_device_get_instance_for_l2cap_cid(channel);
@@ -441,6 +443,8 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t * pack
                 log_error("no device with cid 0x%02x", channel);
                 return;
             }
+            iprotocol = device->protocol_mode;
+
             message_type = (hid_message_type_t)(packet[0] >> 4);
             switch (message_type){
                 case HID_MESSAGE_TYPE_GET_REPORT:
@@ -557,6 +561,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t * pack
                     break;
 
                 case HID_MESSAGE_TYPE_SET_PROTOCOL:
+                printf("SETTING PROTOCOL... (current %i)\n", device->protocol_mode);
                     device->state = HID_DEVICE_W2_SET_PROTOCOL;  
                     if (packet_size != 1) {
                         device->report_status = HID_HANDSHAKE_PARAM_TYPE_ERR_INVALID_PARAMETER;
@@ -835,6 +840,11 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t * pack
             break;
         default:
             break;
+    }
+
+    if(device != NULL){
+        if(iprotocol != 2 && iprotocol != device->protocol_mode)
+            printf("PROTOCOL CHANGED to %i\n",device->protocol_mode);
     }
 }
 
