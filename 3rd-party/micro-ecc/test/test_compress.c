@@ -48,8 +48,8 @@ int main() {
     uECC_set_rng(&fake_rng);
 #endif
 
-    uint8_t public[uECC_BYTES * 2];
-    uint8_t private[uECC_BYTES];
+    uint8_t publc[uECC_BYTES * 2];
+    uint8_t privte[uECC_BYTES];
     uint8_t compressed_point[uECC_BYTES + 1];
     uint8_t decompressed_point[uECC_BYTES * 2];
 
@@ -63,18 +63,18 @@ int main() {
     #endif
 
         /* Generate arbitrary EC point (public) on Curve */
-        if (!uECC_make_key(public, private)) {
+        if (!uECC_make_key(publc, privte)) {
             printf("uECC_make_key() failed\n");
             continue;
         }
 
         /* compress and decompress point */
-        uECC_compress(public, compressed_point);
+        uECC_compress(publc, compressed_point);
         uECC_decompress(compressed_point, decompressed_point);
 
-        if (memcmp(public, decompressed_point, 2 * uECC_BYTES) != 0) {
+        if (memcmp(publc, decompressed_point, 2 * uECC_BYTES) != 0) {
             printf("Original and decompressed points are not identical!\n");
-            vli_print("Original point =     ", public, 2 * uECC_BYTES);
+            vli_print("Original point =     ", publc, 2 * uECC_BYTES);
             vli_print("Compressed point =   ", compressed_point, uECC_BYTES + 1);
             vli_print("Decompressed point = ", decompressed_point, 2 * uECC_BYTES);
         }

@@ -1802,14 +1802,14 @@ static void EccPoint_mult(EccPoint * RESTRICT result,
     vli_set(result->y, Ry[0]);
 }
 
-static int EccPoint_compute_public_key(EccPoint *result, uECC_word_t *private) {
+static int EccPoint_compute_public_key(EccPoint *result, uECC_word_t *privte) {
     uECC_word_t tmp1[uECC_WORDS];
     uECC_word_t tmp2[uECC_WORDS];
     uECC_word_t *p2[2] = {tmp1, tmp2};
     uECC_word_t carry;
 
     /* Make sure the private key is in the range [1, n-1]. */
-    if (vli_isZero(private)) {
+    if (vli_isZero(privte)) {
         return 0;
     }
 
@@ -1818,15 +1818,15 @@ static int EccPoint_compute_public_key(EccPoint *result, uECC_word_t *private) {
     // impact (about 2% slower on average) and requires the vli_xxx_n functions, leading to
     // a significant increase in code size.
 
-    EccPoint_mult(result, &curve_G, private, NULL, vli_numBits(private, uECC_WORDS));
+    EccPoint_mult(result, &curve_G, privte, NULL, vli_numBits(privte, uECC_WORDS));
 #else
-    if (vli_cmp(curve_n, private) != 1) {
+    if (vli_cmp(curve_n, privte) != 1) {
         return 0;
     }
 
     // Regularize the bitcount for the private key so that attackers cannot use a side channel
     // attack to learn the number of leading zeros.
-    carry = vli_add(tmp1, private, curve_n);
+    carry = vli_add(tmp1, privte, curve_n);
     vli_add(tmp2, tmp1, curve_n);
     EccPoint_mult(result, &curve_G, p2[!carry], NULL, (uECC_BYTES * 8) + 1);
 #endif
@@ -2042,15 +2042,15 @@ static void vli_bytesToNative(uint64_t *native, const uint8_t *bytes) {
 #endif /* uECC_WORD_SIZE */
 
 int uECC_make_key(uint8_t public_key[uECC_BYTES*2], uint8_t private_key[uECC_BYTES]) {
-    uECC_word_t private[uECC_WORDS];
-    EccPoint public;
+    uECC_word_t privte[uECC_WORDS];
+    EccPoint publc;
     uECC_word_t tries;
     for (tries = 0; tries < MAX_TRIES; ++tries) {
-        if (g_rng_function((uint8_t *)private, sizeof(private)) &&
-                EccPoint_compute_public_key(&public, private)) {
-            vli_nativeToBytes(private_key, private);
-            vli_nativeToBytes(public_key, public.x);
-            vli_nativeToBytes(public_key + uECC_BYTES, public.y);
+        if (g_rng_function((uint8_t *)privte, sizeof(privte)) &&
+                EccPoint_compute_public_key(&publc, privte)) {
+            vli_nativeToBytes(private_key, privte);
+            vli_nativeToBytes(public_key, publc.x);
+            vli_nativeToBytes(public_key + uECC_BYTES, publc.y);
             return 1;
         }
     }
@@ -2060,11 +2060,11 @@ int uECC_make_key(uint8_t public_key[uECC_BYTES*2], uint8_t private_key[uECC_BYT
 int uECC_shared_secret(const uint8_t public_key[uECC_BYTES*2],
                        const uint8_t private_key[uECC_BYTES],
                        uint8_t secret[uECC_BYTES]) {
-    EccPoint public;
+    EccPoint publc;
     EccPoint product;
-    uECC_word_t private[uECC_WORDS];
+    uECC_word_t privte[uECC_WORDS];
     uECC_word_t tmp[uECC_WORDS];
-    uECC_word_t *p2[2] = {private, tmp};
+    uECC_word_t *p2[2] = {privte, tmp};
     uECC_word_t random[uECC_WORDS];
     uECC_word_t *initial_Z = NULL;
     uECC_word_t tries;
@@ -2080,19 +2080,19 @@ int uECC_shared_secret(const uint8_t public_key[uECC_BYTES*2],
         }
     }
 
-    vli_bytesToNative(private, private_key);
-    vli_bytesToNative(public.x, public_key);
-    vli_bytesToNative(public.y, public_key + uECC_BYTES);
+    vli_bytesToNative(privte, private_key);
+    vli_bytesToNative(publc.x, public_key);
+    vli_bytesToNative(publc.y, public_key + uECC_BYTES);
 
 #if (uECC_CURVE == uECC_secp160r1)
     // Don't regularize the bitcount for secp160r1.
-    EccPoint_mult(&product, &public, private, initial_Z, vli_numBits(private, uECC_WORDS));
+    EccPoint_mult(&product, &publc, privte, initial_Z, vli_numBits(privte, uECC_WORDS));
 #else
     // Regularize the bitcount for the private key so that attackers cannot use a side channel
     // attack to learn the number of leading zeros.
-    carry = vli_add(private, private, curve_n);
-    vli_add(tmp, private, curve_n);
-    EccPoint_mult(&product, &public, p2[!carry], initial_Z, (uECC_BYTES * 8) + 1);
+    carry = vli_add(privte, privte, curve_n);
+    vli_add(tmp, privte, curve_n);
+    EccPoint_mult(&product, &publc, p2[!carry], initial_Z, (uECC_BYTES * 8) + 1);
 #endif
 
     vli_nativeToBytes(secret, product.x);
@@ -2149,23 +2149,23 @@ void uECC_decompress(const uint8_t compressed[uECC_BYTES+1], uint8_t public_key[
 int uECC_valid_public_key(const uint8_t public_key[uECC_BYTES*2]) {
     uECC_word_t tmp1[uECC_WORDS];
     uECC_word_t tmp2[uECC_WORDS];
-    EccPoint public;
+    EccPoint publc;
 
-    vli_bytesToNative(public.x, public_key);
-    vli_bytesToNative(public.y, public_key + uECC_BYTES);
+    vli_bytesToNative(publc.x, public_key);
+    vli_bytesToNative(publc.y, public_key + uECC_BYTES);
 
     // The point at infinity is invalid.
-    if (EccPoint_isZero(&public)) {
+    if (EccPoint_isZero(&publc)) {
         return 0;
     }
 
     // x and y must be smaller than p.
-    if (vli_cmp(curve_p, public.x) != 1 || vli_cmp(curve_p, public.y) != 1) {
+    if (vli_cmp(curve_p, publc.x) != 1 || vli_cmp(curve_p, publc.y) != 1) {
         return 0;
     }
 
-    vli_modSquare_fast(tmp1, public.y); /* tmp1 = y^2 */
-    curve_x_side(tmp2, public.x); /* tmp2 = x^3 + ax + b */
+    vli_modSquare_fast(tmp1, publc.y); /* tmp1 = y^2 */
+    curve_x_side(tmp2, publc.x); /* tmp2 = x^3 + ax + b */
 
     /* Make sure that y^2 == x^3 + ax + b */
     return (vli_cmp(tmp1, tmp2) == 0);
@@ -2173,17 +2173,17 @@ int uECC_valid_public_key(const uint8_t public_key[uECC_BYTES*2]) {
 
 int uECC_compute_public_key(const uint8_t private_key[uECC_BYTES],
                             uint8_t public_key[uECC_BYTES * 2]) {
-    uECC_word_t private[uECC_WORDS];
-    EccPoint public;
+    uECC_word_t privte[uECC_WORDS];
+    EccPoint publc;
 
-    vli_bytesToNative(private, private_key);
+    vli_bytesToNative(privte, private_key);
 
-    if (!EccPoint_compute_public_key(&public, private)) {
+    if (!EccPoint_compute_public_key(&publc, privte)) {
         return 0;
     }
 
-    vli_nativeToBytes(public_key, public.x);
-    vli_nativeToBytes(public_key + uECC_BYTES, public.y);
+    vli_nativeToBytes(public_key, publc.x);
+    vli_nativeToBytes(public_key + uECC_BYTES, publc.y);
     return 1;
 }
 
@@ -2693,7 +2693,7 @@ int uECC_verify(const uint8_t public_key[uECC_BYTES*2],
                 const uint8_t signature[uECC_BYTES*2]) {
     uECC_word_t u1[uECC_N_WORDS], u2[uECC_N_WORDS];
     uECC_word_t z[uECC_N_WORDS];
-    EccPoint public, sum;
+    EccPoint publc, sum;
     uECC_word_t rx[uECC_WORDS];
     uECC_word_t ry[uECC_WORDS];
     uECC_word_t tx[uECC_WORDS];
@@ -2707,8 +2707,8 @@ int uECC_verify(const uint8_t public_key[uECC_BYTES*2],
     r[uECC_N_WORDS - 1] = 0;
     s[uECC_N_WORDS - 1] = 0;
 
-    vli_bytesToNative(public.x, public_key);
-    vli_bytesToNative(public.y, public_key + uECC_BYTES);
+    vli_bytesToNative(publc.x, publc_key);
+    vli_bytesToNative(publc.y, publc_key + uECC_BYTES);
     vli_bytesToNative(r, signature);
     vli_bytesToNative(s, signature + uECC_BYTES);
 
@@ -2730,8 +2730,8 @@ int uECC_verify(const uint8_t public_key[uECC_BYTES*2],
     vli_modMult_n(u2, r, z); /* u2 = r/s */
 
     /* Calculate sum = G + Q. */
-    vli_set(sum.x, public.x);
-    vli_set(sum.y, public.y);
+    vli_set(sum.x, publc.x);
+    vli_set(sum.y, publc.y);
     vli_set(tx, curve_G.x);
     vli_set(ty, curve_G.y);
     vli_modSub_fast(z, sum.x, tx); /* Z = x2 - x1 */
@@ -2742,7 +2742,7 @@ int uECC_verify(const uint8_t public_key[uECC_BYTES*2],
     /* Use Shamir's trick to calculate u1*G + u2*Q */
     points[0] = 0;
     points[1] = &curve_G;
-    points[2] = &public;
+    points[2] = &publc;
     points[3] = &sum;
     numBits = smax(vli_numBits(u1, uECC_N_WORDS), vli_numBits(u2, uECC_N_WORDS));
 

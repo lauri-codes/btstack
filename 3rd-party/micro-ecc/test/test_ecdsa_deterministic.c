@@ -70,8 +70,8 @@ int main() {
     uECC_set_rng(&fake_rng);
 #endif
     
-    uint8_t public[uECC_BYTES * 2];
-    uint8_t private[uECC_BYTES];
+    uint8_t publc[uECC_BYTES * 2];
+    uint8_t privte[uECC_BYTES];
     uint8_t hash[uECC_BYTES];
     uint8_t sig[uECC_BYTES * 2];
     uint8_t tmp[2 * SHA256_DIGEST_LENGTH + SHA256_BLOCK_LENGTH];
@@ -92,18 +92,18 @@ int main() {
         fflush(stdout);
     #endif
         
-        if (!uECC_make_key(public, private)) {
+        if (!uECC_make_key(publc, privte)) {
             printf("uECC_make_key() failed\n");
             continue;
         }
-        memcpy(hash, public, uECC_BYTES);
+        memcpy(hash, publc, uECC_BYTES);
         
-        if (!uECC_sign_deterministic(private, hash, &ctx.uECC, sig)) {
+        if (!uECC_sign_deterministic(privte, hash, &ctx.uECC, sig)) {
             printf("uECC_sign() failed\n");
             continue;
         }
         
-        if (!uECC_verify(public, hash, sig)) {
+        if (!uECC_verify(publc, hash, sig)) {
             printf("uECC_verify() failed\n");
         }
     }
